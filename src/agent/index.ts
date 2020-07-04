@@ -13,22 +13,25 @@ export default class Agent {
   public current: Point;
   protected theta: number;
 
-  constructor(seed: number = Math.random()) {
-    console.debug('Seeded with', seed);
+  constructor(seed: number = Date.now()) {
+    if (process.env.VERBOSE === 'true') console.debug('Seeded with', seed);
+
     this.noise = new Noise(seed);
 
-    this.theta = 0;
-    this.current = this.chooseRandomPoint(this.theta);
+    this.theta = map(Math.random(), 0, 1, 0, 2 * Math.PI);
+    this.current = this.choosePoint(this.theta);
   }
 
-  public chooseRandomPoint(theta: number): Point {
+  public choosePoint(theta: number): Point {
+    // Generate an x-offset and y-offset that move in a circle across a 2d perlin map.
     const xoff = map(Math.cos(theta), -1, 1, 0, NOISE_MAX);
     const yoff = map(Math.sin(theta), -1, 1, 0, NOISE_MAX);
 
-    const rand = map(this.noise.perlin2(xoff, yoff), 0, 1, 100, 200);
+    // Use perlin noise to generate a smooth random curve.
+    const perlin = this.noise.perlin2(xoff, yoff);
+    const rand = map(perlin, 0, 1, 100, 200);
 
-    if (process.env.VERBOSE === 'true') console.log('perlin >>', rand);
-
+    // Map this perlin noise to polar coordinates.
     const x = rand * Math.cos(theta);
     const y = rand * Math.sin(theta);
 
@@ -37,6 +40,6 @@ export default class Agent {
 
   public move() {
     this.theta += INCREMENT;
-    this.current = this.chooseRandomPoint(this.theta);
+    this.current = this.choosePoint(this.theta);
   }
 }
