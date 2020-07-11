@@ -10,5 +10,5 @@ export default function P5Sketch() {
     new p5(Sketch, ref.current as HTMLElement);
   }, []);
 
-  return <div ref={ref} />;
+  return <div ref={ref} style={{ position: 'relative' }} />;
 }

@@ -12,14 +12,16 @@ export default class Agent {
   protected noise: typeof Noise;
   public current: Point;
   protected theta: number;
+  protected direction: -1 | 1;
 
-  constructor(seed: number = Date.now()) {
+  constructor(public init: Point, seed: number = Math.random()) {
     if (process.env.VERBOSE === 'true') console.debug('Seeded with', seed);
 
     this.noise = new Noise(seed);
 
     this.theta = map(Math.random(), 0, 1, 0, 2 * Math.PI);
     this.current = this.choosePoint(this.theta);
+    this.direction = ~~(Math.random() + 0.5) ? 1 : -1;
   }
 
   public choosePoint(theta: number): Point {
@@ -29,17 +31,18 @@ export default class Agent {
 
     // Use perlin noise to generate a smooth random curve.
     const perlin = this.noise.perlin2(xoff, yoff);
-    const rand = map(perlin, 0, 1, 100, 200);
+    const rand = map(perlin, 0, 1, 50, 100);
 
     // Map this perlin noise to polar coordinates.
-    const x = rand * Math.cos(theta);
-    const y = rand * Math.sin(theta);
+    const x = rand * Math.cos(theta) + this.init.x;
+    const y = rand * Math.sin(theta) + this.init.y;
 
     return new Point(x, y);
   }
 
-  public move() {
-    this.theta += INCREMENT;
+  public move(): this {
+    this.theta += INCREMENT * this.direction;
     this.current = this.choosePoint(this.theta);
+    return this;
   }
 }
